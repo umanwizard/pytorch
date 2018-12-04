@@ -10,7 +10,11 @@ struct function_traits : public function_traits<decltype(&T::operator())> {
 };
 
 template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...) const> {
+struct function_traits<ReturnType(ClassType::*)(Args...) const> : public function_traits<ReturnType(Args...)> {
+};
+
+template <typename ReturnType, typename... Args>
+struct function_traits<ReturnType(Args...)> {
   // arity is the number of arguments.
   enum { arity = sizeof...(Args) };
 
