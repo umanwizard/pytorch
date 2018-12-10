@@ -96,7 +96,7 @@ void prod_kernel_impl(TensorIterator& iter) {
 }
 
 static void std_kernel_cuda(TensorIterator& iter, bool unbiased) {
-  AT_DISPATCH_FLOATING_TYPES(iter.type(), "std", [&]() {
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(iter.type(), "std", [&]() {
     if (unbiased) {
       std_kernel_impl<scalar_t, true>(iter);
     } else {
