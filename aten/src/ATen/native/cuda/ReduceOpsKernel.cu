@@ -59,15 +59,11 @@ struct WelfordOps {
     int64_t divisor = unbiased ? (acc.n - 1) : acc.n;
     return (divisor > 0) ? std::sqrt(acc.m2 / divisor) : NAN;
   }
-  static inline __device__ std::tuple<double, double, int64_t> to_tuple(const WelfordData& acc) {
-    return std::make_tuple(acc.mean, acc.m2, acc.n);
-  }
-
-  static inline __device__ WelfordData from_tuple(const std::tuple<double, double, int64_t>& tup) {
+  static inline __device__ WelfordData warp_shfl_down(const WelfordData& acc, int offset) {
     return {
-      std::get<0>(tup),
-      std::get<1>(tup),
-      std::get<2>(tup)
+      WARP_SHFL_DOWN(acc.mean, offset)
+      , WARP_SHFL_DOWN(acc.m2, offset)
+      , WARP_SHFL_DOWN(acc.n, offset)
     };
   }
 };

@@ -212,29 +212,24 @@ struct func_wrapper_t {
   static inline __device__ scalar_t project(arg_t arg) {
     return (scalar_t) arg;
   }
-  static inline __device__ std::tuple<arg_t> to_tuple(arg_t arg) {
-    return std::tuple<arg_t> {arg};
+  static inline __device__ arg_t warp_shfl_down(arg_t arg, int offset) {
+    return WARP_SHFL_DOWN(arg, offset);
   }
-  static inline __device__ arg_t from_tuple(std::tuple<arg_t> tup) {
-    return std::get<0>(tup);
+
+  func_wrapper_t(const func_t& op) : reduce(op), combine(op) {
   }
 };
 
 template <typename scalar_t, typename func_t>
 func_wrapper_t<scalar_t, func_t> func_wrapper(const func_t& op) {
   using arg_t = typename binary_function_traits<func_t>::arg2_t;
-  return func_wrapper_t<scalar_t, func_t> {
-    .reduce = op,
-    .combine = op,
-  };
+  return func_wrapper_t<scalar_t, func_t> { op };
 }
 
 template <typename scalar_t, typename ops_t, typename index_t, typename out_scalar_t=scalar_t>
 struct ReduceOp {
   using traits = binary_function_traits<decltype(ops_t::reduce)>;
   using arg_t = typename std::remove_const<typename std::remove_reference<typename traits::arg1_t>::type>::type;
-
-  using tuple_t = typename function_traits<decltype(ops_t::to_tuple)>::result_type;
 
   using InputCalculator = OffsetCalculator<1, index_t>;
   using OutputCalculator = OffsetCalculator<2, index_t>;
@@ -354,7 +349,7 @@ struct ReduceOp {
 
   C10_DEVICE arg_t warp_reduce(arg_t value) const {
     for (int offset = 1; offset < warpSize; offset <<= 1) {
-      arg_t other = ops.from_tuple(warp_shfl_down_tuple::call(ops.to_tuple(value), offset));
+      arg_t other = ops.warp_shfl_down(value, offset);
       value = ops.combine(value, other);
     }
     return value;
