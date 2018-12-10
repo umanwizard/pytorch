@@ -2,6 +2,7 @@
 #include <ATen/Context.h>
 #include <ATen/Dispatch.h>
 #include <ATen/native/cuda/Loops.cuh>
+#include <ATen/native/cuda/Normalization.cuh>
 #include <ATen/native/cuda/Reduce.cuh>
 #include <ATen/native/DispatchStub.h>
 #include <ATen/native/TensorIterator.h>
@@ -57,7 +58,7 @@ struct WelfordOps {
   }
   static inline __device__ scalar_t project(const WelfordData& acc) {
     int64_t divisor = unbiased ? (acc.n - 1) : acc.n;
-    return (divisor > 0) ? std::sqrt(acc.m2 / divisor) : NAN;
+    return (divisor > 0) ? device_sqrt(acc.m2 / divisor) : NAN;
   }
   static inline __device__ WelfordData warp_shfl_down(const WelfordData& acc, int offset) {
     return {
