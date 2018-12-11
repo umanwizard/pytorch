@@ -65,7 +65,7 @@ void binary_kernel_reduce(TensorIterator& iter, ops_t ops) {
   using p_traits = unary_function_traits<pf_t>;
   using acc_t = typename p_traits::arg1_t;
   using data_t = typename p_traits::result_type;
-  /*static_assert(
+  static_assert(
     all_same<
       acc_t,
       typename r_traits::arg1_t,
@@ -80,7 +80,7 @@ void binary_kernel_reduce(TensorIterator& iter, ops_t ops) {
   static_assert(
     std::is_default_constructible<acc_t>::value,
     "the accumulate type must be default-constructible"
-  );*/
+  );
   iter.foreach_reduced_elt([&](TensorIterator &sub_iter) {
     auto numel = sub_iter.numel();
     bool serial = numel < at::internal::GRAIN_SIZE || at::get_max_threads() == 1 || at::in_parallel_region();
