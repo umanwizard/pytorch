@@ -328,25 +328,6 @@ struct ReduceOp {
     return value;
   }
 
-  // calls WARP_SHFL_DOWN on each element of a tuple,
-  // and returns a tuple of the result.
-  class warp_shfl_down_tuple
-  {
-    template <typename... Types, size_t... I>
-    static C10_DEVICE std::tuple<Types...> do_each(
-      const std::tuple<Types...>& values, int offset, c10::guts::index_sequence<I...>) {
-      return std::tuple<Types...>{
-        WARP_SHFL_DOWN(std::get<I>(values), offset)...
-      };
-    }
-  public:
-    template <typename... Types>
-    static C10_DEVICE std::tuple<Types...> call(const std::tuple<Types...>& values, int offset) {
-      using Indices = c10::guts::make_index_sequence<sizeof...(Types)>;
-      return do_each(values, offset, Indices{});
-    }
-  };
-
   C10_DEVICE arg_t warp_reduce(arg_t value) const {
     for (int offset = 1; offset < warpSize; offset <<= 1) {
       arg_t other = ops.warp_shfl_down(value, offset);
