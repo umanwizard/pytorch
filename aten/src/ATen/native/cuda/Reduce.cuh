@@ -228,7 +228,7 @@ func_wrapper_t<scalar_t, func_t> func_wrapper(const func_t& op) {
 
 template <typename scalar_t, typename ops_t, typename index_t, typename out_scalar_t=scalar_t>
 struct ReduceOp {
-  using traits = binary_function_traits<decltype(ops_t::reduce)>;
+  using traits = binary_function_traits<decltype(&ops_t::reduce)>;
   using arg_t = typename std::remove_const<typename std::remove_reference<typename traits::arg1_t>::type>::type;
 
   using InputCalculator = OffsetCalculator<1, index_t>;
@@ -469,7 +469,7 @@ template <typename scalar_t, typename out_scalar_t, typename ops_t, typename ide
 inline void gpu_reduce_kernel(TensorIterator& iter, const ops_t& ops, ident_t ident=0) {
   AT_ASSERT(iter.numel() > 0 && iter.ntensors() == 2);
 
-  using traits = binary_function_traits<decltype(ops_t::reduce)>;
+  using traits = binary_function_traits<decltype(&ops_t::reduce)>;
   using arg_t = typename traits::arg1_t;
   static constexpr bool can_accumulate_in_output =
     std::is_convertible<arg_t, out_scalar_t>::value;
