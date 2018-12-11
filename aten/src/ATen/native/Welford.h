@@ -21,6 +21,7 @@ struct WelfordData {
 template <typename scalar_t>
 struct WelfordOps {
   bool unbiased;
+  bool take_sqrt;
  public:
   inline C10_DEVICE WelfordData reduce(WelfordData acc, scalar_t data) const {
     double delta = data - acc.mean;
@@ -50,7 +51,9 @@ struct WelfordOps {
   }
   inline C10_DEVICE scalar_t project(WelfordData acc) const {
     int64_t divisor = unbiased ? (acc.n - 1) : acc.n;
-    return (divisor > 0) ? device_sqrt(acc.m2 / divisor) : NAN;
+    return (divisor > 0) ? 
+      (take_sqrt ? device_sqrt(acc.m2 / divisor) : (acc.m2 / divisor))
+      : NAN;
   }
 #if defined(__CUDACC__) || defined(__HIPCC__)
   inline __device__ WelfordData warp_shfl_down(WelfordData acc, int offset) const {
@@ -61,7 +64,8 @@ struct WelfordOps {
     };
   }
 #endif
-  WelfordOps(bool unbiased) : unbiased(unbiased) {
+  WelfordOps(bool unbiased, bool take_sqrt)
+    : unbiased(unbiased), take_sqrt(take_sqrt) {
   }
 };
 

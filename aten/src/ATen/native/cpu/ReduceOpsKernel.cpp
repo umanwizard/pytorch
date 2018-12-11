@@ -23,11 +23,11 @@ static void sum_kernel_impl(TensorIterator& iter) {
   });
 }
 
-static void std_kernel_impl(TensorIterator &iter, bool unbiased) {
+static void std_var_kernel_impl(TensorIterator &iter, bool unbiased, bool take_sqrt) {
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(iter.type(), "std", [&] {
     binary_kernel_reduce(
       iter,
-      WelfordOps<scalar_t> { unbiased }
+      WelfordOps<scalar_t> { unbiased, take_sqrt }
     );
   });
 }
@@ -214,7 +214,7 @@ static void norm_kernel_impl(
 }  // anonymous namespace
 
 REGISTER_DISPATCH(sum_stub, &sum_kernel_impl);
-REGISTER_DISPATCH(std_stub, &std_kernel_impl);
+REGISTER_DISPATCH(std_var_stub, &std_var_kernel_impl);
 REGISTER_DISPATCH(prod_stub, &prod_kernel_impl);
 REGISTER_DISPATCH(norm_kernel, &norm_kernel_impl);
 
