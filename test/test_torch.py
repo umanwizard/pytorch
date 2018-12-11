@@ -1947,8 +1947,9 @@ class _TestTorchMixin(object):
                     actual = pytorch_op(tensor, dim)
                     self._assert_matches_numpy(actual, expected)
                     if torch.cuda.is_available():
-                        self.assertEqual(actual,
-                                         pytorch_op(tensor.cuda(), dim).cpu())
+                        self._assert_matches_numpy(pytorch_op(tensor.cuda(),
+                                                              dim).cpu(),
+                                                   expected)
         do_one(self._make_tensors((5, 400000), use_floating=use_floating,
                use_integral=use_integral), 1)
         do_one(self._make_tensors((3, 5, 7), use_floating=use_floating,
