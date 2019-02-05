@@ -3950,7 +3950,7 @@ class _TestTorchMixin(object):
         t = torch.rand(random.randint(1, SIZE),
                        random.randint(1, SIZE),
                        random.randint(1, SIZE))
-
+        t[0][0][0] = float('NaN')
         for _kTries in range(3):
             for _dimTries in range(3):
                 for transpose in (True, False):

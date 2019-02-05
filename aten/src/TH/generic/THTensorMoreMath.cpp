@@ -951,7 +951,7 @@ static void THTensor_(quickselect)(scalar_t *arr, int64_t *idx, int64_t k, int64
       return;
 
     if (R == L+1) {  /* Two elements only */
-      if (ARR(L) > ARR(R)) {
+      if (GT_OR_NAN(ARR(L), ARR(R))) {
         BOTH_SWAP(L, R);
       }
       return;
@@ -960,16 +960,16 @@ static void THTensor_(quickselect)(scalar_t *arr, int64_t *idx, int64_t k, int64
     /* Use median of three for pivot choice */
     P=(L+R)>>1;
     BOTH_SWAP(P, L+1);
-    if (ARR(L+1) > ARR(R)) { BOTH_SWAP(L+1, R); }
-    if (ARR(L) > ARR(R)) { BOTH_SWAP(L, R); }
-    if (ARR(L+1) > ARR(L)) { BOTH_SWAP(L+1, L); }
+    if (GT_OR_NAN(ARR(L+1), ARR(R))) { BOTH_SWAP(L+1, R); }
+    if (GT_OR_NAN(ARR(L), ARR(R))) { BOTH_SWAP(L, R); }
+    if (GT_OR_NAN(ARR(L+1), ARR(L))) { BOTH_SWAP(L+1, L); }
 
     i = L+1;
     j = R;
     piv = ARR(L);
     do {
-      do i++; while(ARR(i) < piv);
-      do j--; while(ARR(j) > piv);
+      do i++; while(GT_OR_NAN(piv, ARR(i)));
+      do j--; while(GT_OR_NAN(ARR(j), piv));
       if (j < i)
         break;
       BOTH_SWAP(i, j);
